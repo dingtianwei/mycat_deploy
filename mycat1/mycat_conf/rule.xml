@@ -1,0 +1,14 @@
+<!DOCTYPE mycat:rule SYSTEM "rule.dtd">
+<mycat:rule xmlns:mycat="http://io.mycat/">
+    <tableRule name="rule1">
+        <rule>
+            <columns>id</columns>
+            <algorithm>func1</algorithm>
+        </rule>
+    </tableRule>
+    
+    <function name="func1" class="io.mycat.route.function.PartitionByLong">
+        <property name="partitionCount">2</property>
+        <property name="partitionLength">512</property>
+    </function>
+</mycat:rule>

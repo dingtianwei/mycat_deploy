@@ -1,0 +1,68 @@
+version: '3'
+
+services:
+  mysql_master1:
+    container_name: mysql_master1
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: mycat_user
+      MYSQL_PASSWORD: mycat_pass
+    volumes:
+      - ./master1_data:/var/lib/mysql
+      - ./master1_conf:/etc/mysql/conf.d
+    ports:
+      - "3307:3306"
+    networks:
+      - mysql_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  mysql_master2:
+    container_name: mysql_master2
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: mycat_user
+      MYSQL_PASSWORD: mycat_pass
+    volumes:
+      - ./master2_data:/var/lib/mysql
+      - ./master2_conf:/etc/mysql/conf.d
+    ports:
+      - "3308:3306"
+    networks:
+      - mysql_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  mycat:
+    container_name: mycat
+    image: manondidi/mycat:1.6.7.5
+    volumes:
+      - ./mycat_conf/server.xml:/usr/local/mycat/conf/server.xml
+      - ./mycat_conf/schema.xml:/usr/local/mycat/conf/schema.xml
+      - ./mycat_conf/rule.xml:/usr/local/mycat/conf/rule.xml
+      - ./mycat_logs:/usr/local/mycat/logs
+    ports:
+      - "8066:8066"  # 数据服务的端口
+      - "9066:9066"  # 管理端的端口
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=root_password
+    depends_on:
+      - mysql_master1
+      - mysql_master2
+    networks:
+      - mysql_network
+
+networks:
+  mysql_network:
+    driver: bridge
